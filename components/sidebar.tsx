@@ -1,8 +1,8 @@
 import Link from "next/link"
-import { CalendarIcon, CheckIcon, ClipboardListIcon, FolderIcon, ListIcon, MenuIcon, PlusIcon, SettingsIcon } from 'lucide-react'
+import { CalendarIcon, CheckIcon, ClipboardListIcon, FolderIcon, ListIcon, SettingsIcon } from 'lucide-react'
 
 export default function Sidebar() {
-  return <aside className="hidden w-64 flex-col border-r bg-card p-4 md:flex">
+  return <aside className="hidden w-64 flex-col border-r border-r-black bg-card p-4 md:flex bg-neutral-800 text-white">
     <div className="mb-6 flex items-center gap-2">
       <ClipboardListIcon className="h-6 w-6" />
       <h2 className="text-2xl font-bold">Task Manager</h2>
