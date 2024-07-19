@@ -143,7 +143,8 @@ export function TasksPage() {
     const tasks = await db.tasks.toArray();
     return mapArrayToEntities(tasks, getTaskKey);
   }, {
-    suspense: true
+    suspense: true,
+    fallback: [],
   });
 
   if (tasksQuery.error) {
