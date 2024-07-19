@@ -1,15 +1,15 @@
 "use client";
 
-import type { Task } from "../lib/db";
 import TaskCard from "./task-card";
 import useSWR from "swr";
+import type { Task } from "../lib/db";
 
 type Props = Readonly<{
   group: {
     id: string;
     name: string;
     noTasksLabel: string;
-    loadTasks: () => Promise<Task[]>;
+    loadTaskIds: () => Promise<Array<Task['id']>>;
   };
 }>;
 
@@ -25,20 +25,20 @@ export default function TaskListGroup(props: Props) {
 }
 
 function TaskList(props: Props) {
-  const { data, error, isLoading } = useSWR(
-    `tasks-${props.group.id}`,
-    props.group.loadTasks
+  const taskGroupQuery = useSWR(
+    `/task-groups/${props.group.id}`,
+    props.group.loadTaskIds
   );
 
-  if (error) {
+  if (taskGroupQuery.error) {
     return <p className="text-sm text-red-500">Failed to load tasks</p>;
   }
 
-  if (isLoading) {
+  if (taskGroupQuery.isLoading) {
     return <p className="text-sm text-muted-foreground">Loading tasks...</p>;
   }
 
-  if (data!.length === 0) {
+  if (taskGroupQuery.data!.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
         {props.group.noTasksLabel}
@@ -46,5 +46,7 @@ function TaskList(props: Props) {
     );
   }
 
-  return data!.map((task) => <TaskCard key={task.id} task={task} />);
+  return taskGroupQuery.data!.map((taskId) => <TaskCard key={taskId} taskId={taskId} onTaskDeleted={() => {
+    taskGroupQuery.mutate(taskGroupQuery.data?.filter(id => id !== taskId))
+  }} />);
 }
