@@ -142,18 +142,16 @@ export function TasksPage() {
   const tasksQuery = useSWR(tasksQueryKey, async () => {
     const tasks = await db.tasks.toArray();
     return mapArrayToEntities(tasks, getTaskKey);
+  }, {
+    suspense: true
   });
 
   if (tasksQuery.error) {
     return <p>Error... {JSON.stringify(tasksQuery.error)}</p>;
   }
 
-  if (!tasksQuery.data) {
-    return <p>Loading...</p>;
-  }
-
   function handleTaskUpdated(updatedTask: Task) {
-    const updatedTasks = produce(tasksQuery.data!, (draft) => {
+    const updatedTasks = produce(tasksQuery.data, (draft) => {
       draft.record[updatedTask.id] = updatedTask;
     });
     tasksQuery.mutate(
@@ -168,7 +166,7 @@ export function TasksPage() {
   }
 
   function handleTaskDeleted(deletedTask: Task) {
-    const updatedTasks = produce(tasksQuery.data!, (draft) => {
+    const updatedTasks = produce(tasksQuery.data, (draft) => {
       delete draft.record[deletedTask.id];
       draft.ids.splice(draft.ids.indexOf(deletedTask.id), 1);
     });
@@ -179,6 +177,27 @@ export function TasksPage() {
       },
       {
         optimisticData: updatedTasks,
+      }
+    );
+  }
+
+  function handleTaskCreated(newTask: Omit<Task, 'id'>) {
+    const tempId = -1;
+    const tempTasks = produce(tasksQuery.data, (draft) => {
+      const taskWithTempId = { ...newTask, id: tempId };
+      draft.record[tempId] = taskWithTempId;
+      draft.ids.push(tempId);
+    });
+    tasksQuery.mutate(
+      async () => {
+        const taskId = await db.tasks.add(newTask);
+        return produce(tasksQuery.data, draft => {
+          draft.ids.push(taskId);
+          draft.record[taskId] = { id: taskId, ...newTask };
+        });
+      },
+      {
+        optimisticData: tempTasks,
       }
     );
   }
@@ -212,16 +231,13 @@ export function TasksPage() {
                     dueDate: taskValues.dueDate,
                     projectId: taskValues.projectId,
                   };
-                  const newTaskId = await db.tasks.add(newTask);
-                  await tasksQuery.mutate(undefined, {
-                    revalidate: true,
-                  });
+                  handleTaskCreated(newTask);
                 }}
               />
             </div>
             <div className="grid gap-4">
               {getTaskGroups(tasksQuery.data?.toArray()).map((group) => (
-                <div>
+                <div key={group.id}>
                   <h2 className="mb-2 text-lg font-semibold">{group.name}</h2>
                   <div className="space-y-2">
                     {group.getTasks().map((task) => (
