@@ -17,16 +17,18 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { db, type Task } from '../lib/db';
+import type { Project, Task } from "@/lib/db";
 import { format } from 'date-fns/format';
 import { produce } from 'immer';
 
 export default function TaskCard({
   task,
+  projects,
   onTaskUpdated,
   onTaskDeleted,
 }: Readonly<{
   task: Task;
+  projects: Project[];
   onTaskUpdated: (updatedTask: Task) => void;
   onTaskDeleted: () => void;
 }>) {
@@ -51,11 +53,10 @@ export default function TaskCard({
                 <PopoverTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="w-fit px-2 h-3 text-xs font-normal"
-                  >
+                    className="w-fit px-2 h-3 text-xs font-normal">
                     <CalendarDaysIcon className="size-4 stroke-muted-foreground mr-1" />
                     {task.dueDate
-                      ? `Due: ${format(task.dueDate, 'EEE P')}`
+                      ? `Due: ${format(task.dueDate, "EEE P")}`
                       : `No due date`}
                   </Button>
                 </PopoverTrigger>
@@ -79,16 +80,17 @@ export default function TaskCard({
                     draft.projectId = newProjectValue;
                   });
                   onTaskUpdated(updatedTask);
-                }}
-              >
+                }}>
                 <SelectTrigger className="h-3 group w-fit px-2 text-xs border-none hover:bg-muted">
                   <FlagIcon className="stroke-muted-foreground group-hover:stroke-accent-foreground size-4 mr-1" />
                   <SelectValue placeholder="No Project" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="project-a">Project A</SelectItem>
-                  <SelectItem value="project-b">Project B</SelectItem>
-                  <SelectItem value="project-c">Project C</SelectItem>
+                  {projects.map((project) => (
+                    <SelectItem key={project.id} value={`${project.id}`}>
+                      {project.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

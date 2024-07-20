@@ -15,10 +15,19 @@ export const Task = z.object({
 
 export type Task = z.infer<typeof Task>;
 
+export const Project = z.object({
+  id: z.number(),
+  name: z.string().min(1),
+});
+
+export type Project = z.infer<typeof Project>;
+
 export const db = new Dexie("myDatabase") as Dexie & {
   tasks: EntityTable<Task, "id">;
+  projects: EntityTable<Project, "id">;
 };
 
 db.version(1).stores({
   tasks: "++id, description, completed, dueDate, projectId",
+  projects: "++id, name",
 });

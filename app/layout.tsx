@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
-import { Inter as FontSans } from "next/font/google"
-import { cn } from '@/lib/utils';
+import { Inter as FontSans } from "next/font/google";
+import { cn } from "@/lib/utils";
 import "./globals.css";
+import Sidebar from "../components/sidebar/sidebar";
+import { Button } from "../components/ui/button";
+import { ListIcon, MenuIcon } from "lucide-react";
 
 const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
-})
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -20,10 +23,32 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={cn(
+      <body
+        className={cn(
           "min-h-screen bg-background font-sans antialiased",
           fontSans.variable
-        )}>{children}</body>
+        )}>
+        <div className="flex min-h-screen w-full bg-background">
+          <Sidebar />
+          <div className="flex flex-1 flex-col">
+            <header className="bg-neutral-800 text-white sticky top-0 z-10 flex h-14 items-center justify-between bg-card px-4 shadow-sm md:px-6">
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <MenuIcon className="h-6 w-6" />
+                  <span className="sr-only">Toggle menu</span>
+                </Button>
+                <h1 className="text-lg font-semibold flex items-center gap-2">
+                  <div>
+                    <ListIcon className="h-5 w-5" />
+                  </div>
+                  <div>My Tasks</div>
+                </h1>
+              </div>
+            </header>
+            {children}
+          </div>
+        </div>
+      </body>
     </html>
   );
 }
